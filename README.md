@@ -23,9 +23,9 @@ The ideal file manager provides two modes: supervised and unspuervised.
   * storage
     * MongoDB
 
-* Model
-  * [unsupervised](https://en.wikipedia.org/wiki/Topic_model): 
-  * supervised
+  * Model
+    * [unsupervised](https://en.wikipedia.org/wiki/Topic_model): 
+    * supervised
 
 * Building the app
   * app.py
