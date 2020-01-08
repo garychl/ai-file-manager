@@ -17,11 +17,11 @@ The ideal file manager provides two modes: supervised and unspuervised.
 ## TODO
 
 * Building the topic modelling engine
-        + Data
-            - get from [arxiv](https://arxiv.org/help/api#python_simple_example)
-            - get from a pdf file
-        + storage
-            - MongoDB
+    + Data
+        - get from [arxiv](https://arxiv.org/help/api#python_simple_example)
+        - get from a pdf file
+    + storage
+        - MongoDB
   
 * Model
         - [unsupervised](https://en.wikipedia.org/wiki/Topic_model): 
