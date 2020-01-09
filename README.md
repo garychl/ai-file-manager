@@ -4,7 +4,7 @@ An AI file manager to manage the research papers (in the field of machine learni
 
 * You have to read the paper before you can categorize it. This is undesirable when you do not have time or just simply do not want to read any paper.
 
-* It is not easy to have a taxonomy that suits your need every time. Since a research paper is sometimes interdisciplinary or it invovles serveral concepts in a surprising way.
+* It is not easy to have a taxonomy that suits your need every time. Because a research paper is sometimes interdisciplinary or it invovles serveral concepts in a surprising way.
 
 The ideal file manager provides two modes: supervised and unspuervised.
 
