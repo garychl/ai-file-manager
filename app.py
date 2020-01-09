@@ -1,7 +1,7 @@
 """
 Given a PDF file, generate a set of topics for it and add to the metadata.
 """
-from pdfrw import PdfReader, PdfWriter   
+from pdfrw import PdfReader, PdfWriter, IndirectPdfDict 
 from pprint import pprint
 
 class PdfFileManager():
@@ -16,6 +16,9 @@ class PdfFileManager():
 
     def get_meta_data(self):
         return self.reader.Info
+
+    def parse_doc(self, content='abstract'):
+        pass
 
     
 if __name__ == '__main__':
