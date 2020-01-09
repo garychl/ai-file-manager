@@ -2,8 +2,8 @@ import unittest
 from app import PdfFileManager
 
 
-class MyTest(unittest.TestCase):
-    def test(self):
+class TestMetaData(unittest.TestCase):
+    def test_set_metadata(self):
         # set metadaata
         topics = ['topicA', 'topicB']
         pdf1 = PdfFileManager('./data/1502.04390.pdf', '123')
