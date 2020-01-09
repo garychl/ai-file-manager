@@ -12,6 +12,7 @@ class PdfFileManager():
 
     def set_meta_data(self, key, value):
         setattr(self.reader.Info, key, value)   
+        PdfWriter(self.path, trailer=self.reader).write()
 
     def get_meta_data(self):
         return self.reader.Info
