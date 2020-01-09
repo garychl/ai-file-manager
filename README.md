@@ -10,7 +10,7 @@ The ideal file manager provides two modes: supervised and unspuervised.
 
 ## Use Case
 
-* You find a new research paper online but you do not have time to read at that moment. Over time you may accumulate a lot of unread papers. This app can help tagging the papers you saved locally and add the tags in the metadata.
+* You find a new research paper online but you do not have time to read at that moment. Over time you may accumulate a lot of unread papers. This app can help tagging the papers you saved locally and add the tags to the metadata.
 
 * With the added tags, you can create script to have an overview of all the papers (e.g. group by topics) or you can assign them to different folders.
 
@@ -24,8 +24,8 @@ The ideal file manager provides two modes: supervised and unspuervised.
     * MongoDB
 
   * Model
-    * [unsupervised](https://en.wikipedia.org/wiki/Topic_model): 
-    * supervised
+    * [unsupervised](https://en.wikipedia.org/wiki/Topic_model):
+    * supervised: SHA-RNN
 
 * Building the app
   * app.py
