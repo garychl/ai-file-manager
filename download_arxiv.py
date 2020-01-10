@@ -3,8 +3,8 @@ Download the papers from arxiv.
 
 Note: 
     -   Since an off-the -shelf arxiv xml parser is used, using mongobd might be an overkill. 
-    -   Since the data size is still manageblae even query 5 years data at once,
-    the data are fetched, parsed and inserted at once. 
+    -   Since the data size is still small even querying 5 years data,
+    the data are fetched into memory, parsed and inserted at once. 
         If data size is large, the script need to modify to fetch less data, with the cost 
     increased network traffic overheads.
 """
