@@ -18,18 +18,20 @@ The ideal file manager provides two modes: supervised and unspuervised.
 
 * Building the topic modelling engine
   * Data
-    * get from [arxiv](https://arxiv.org/help/api#python_simple_example)
-    * get from a pdf file
+    * [x] get from [arxiv](https://arxiv.org/help/api#python_simple_example)
+    * [ ] quality check of downloaded files (arxivscraper seems to be something wrong)
   * storage
-    * MongoDB
+    * [x] MongoDB
+    * [x] File System
+    * [ ] MySQL
 
   * Model
-    * [unsupervised](https://en.wikipedia.org/wiki/Topic_model):
-    * supervised: SHA-RNN
+    * [ ] [unsupervised](https://en.wikipedia.org/wiki/Topic_model):
+    * [ ] supervised:
 
 * Building the app
-  * app.py
-  * parsing the abstract
-  * run the model
-  * add the predicted topics to the metadata
-  * add (field, value) to the metadata
+  * [x] app.py
+  * [ ] parsing the abstract
+  * [ ] run the model
+  * [x] add the predicted topics to the metadata
+  * [x] add (field, value) to the metadata
