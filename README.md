@@ -19,6 +19,7 @@ The ideal file manager provides two modes: supervised and unspuervised.
 * Building the topic modelling engine
   * Data
     * get from [arxiv](https://arxiv.org/help/api#python_simple_example)
+    * quality check of downloaded files (arxivscraper seems to be something wrong)
     * get from a pdf file
   * storage
     * MongoDB
