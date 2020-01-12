@@ -98,8 +98,13 @@ class FileSystemDriver(StorageDriver):
 
     def insert_many(self, db_name, collection_name, documents, files_name=None, format='.pkl'):
         print('Writing into file system ...')
-        for document in documents:
-            self.insert_one(db_name, collection_name, document)
+        if files_name is not None:
+            for document, file_name in zip(documents, files_name):
+                self.insert_one(db_name, collection_name, document, file_name)
+        else:
+            for document in documents:
+                self.insert_one(db_name, collection_name, document)
+        
         print('Finished Download.')          
 
 
