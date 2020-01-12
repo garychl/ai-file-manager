@@ -10,7 +10,7 @@ Note:
 """
 import os
 import yaml
-import utils.arxiv_parser as ax
+import utilities.arxiv_parser as ax
 from pymongo import MongoClient
 from pprint import pprint
 import pickle
