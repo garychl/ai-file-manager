@@ -1,48 +1,54 @@
 """
 Download the papers from arxiv.
-
-Note: 
-    -   Since an off-the -shelf arxiv xml parser is used, using mongobd might be an overkill. 
-    -   Since the data size is still small even querying 5 years data,
-    the data are fetched into memory, parsed and inserted at once. 
-        If data size is large, the script need to modify to fetch less data, with the cost 
-    increased network traffic overheads.
+Note:
+- Since an off-the -shelf arxiv xml parser is used, using mongobd might be an overkill. \
+- Since the data size is still small even querying 5 years data,\
+the data are fetched into memory, parsed and inserted at once. \
+If data size is large, the script need to modify to fetch less data, with the cost \
+increased network traffic overheads.
 """
 import os
-import yaml
-import utilities.arxiv_parser as ax
-from pymongo import MongoClient
-from pprint import pprint
 import pickle
+import yaml
 
-def read_yaml_input(input):
-    if type(input) == str:
-        with open(input, 'r', newline='') as f:
+from pymongo import MongoClient
+
+import utilities.arxiv_parser as ax
+
+
+def read_yaml_input(yaml_input):
+    """Reading configuration file"""
+    if isinstance(yaml_input, str):
+        with open(yaml_input, 'r', newline='') as f:
             try:
-                config = yaml.safe_load(f)
+                yaml_config = yaml.safe_load(f)
             except yaml.YAMLError as ymlexcp:
                 print(ymlexcp)
-    elif type(input) == dict:
-        config = input
+    elif isinstance(yaml_input, dict):
+        yaml_config = yaml_input
     else:
         raise Exception("Only accept dict or path of the .yaml file.")
-    return config
+    return yaml_config
 
 
 def correct_file_name(file_name):
+    """ensure file name will not cause error"""
     return file_name.replace("/", "_")
 
 def scrape_arxiv(criterion):
-    if type(criterion) != dict:
+    """scrpaing the papers from arxiv"""
+    if not isinstance(criterion, dict):
         raise Exception("criterion is a dict.")
     print('Fetching the data with the criterion:\n{}'.format(criterion))
     scraper = ax.Scraper2(**criterion)
     documents = scraper.scrape()    # list of dict
-    print('Completed downloading. Downloaded {} documents.'.format(len(documents)))
+    print('Completed downloading. Downloaded {} documents.'.format(
+        len(documents)))
     return documents
 
 
 class StorageDriver():
+    """Base class for stroage client"""
     def __init__(self, connection_string):
         self.client = self.init_client(connection_string)
 
@@ -60,6 +66,7 @@ class StorageDriver():
 
 
 class FileSystemDriver(StorageDriver):
+    """File system storage client."""
     def __init__(self, connection_string):
         super().__init__(connection_string)
 
@@ -81,22 +88,22 @@ class FileSystemDriver(StorageDriver):
             os.mkdir(collection_dir)
         return collection_dir
 
-    def insert_one(self, db_name, collection_name, document, file_name=None, format='.pkl'):
+    def insert_one(self, db_name, collection_name, document, file_name=None, out_format='.pkl'):
         try:
             file_name = document['id']
         except KeyError:
-            assert file_name != None, "Please provide a file name for doc:/n{}".format(document)
+            assert file_name is not None, "Please provide a file name for doc:/n{}".format(document)
             file_name = file_name
 
-        if format == '.pkl':
+        if out_format == '.pkl':
             file_name = correct_file_name(file_name) + '.pkl'
             collection_dir = self.create_collection(db_name, collection_name)
             with open(os.path.join(collection_dir, file_name), 'wb') as f:
                 pickle.dump(document, f, pickle.HIGHEST_PROTOCOL)
         else:
-            raise "{} is not a currently supported format".format(format)
+            raise "{} is not a currently supported format".format(out_format)
 
-    def insert_many(self, db_name, collection_name, documents, files_name=None, format='.pkl'):
+    def insert_many(self, db_name, collection_name, documents, files_name=None, out_format='.pkl'):
         print('Writing into file system ...')
         if files_name is not None:
             for document, file_name in zip(documents, files_name):
@@ -104,11 +111,11 @@ class FileSystemDriver(StorageDriver):
         else:
             for document in documents:
                 self.insert_one(db_name, collection_name, document)
-        
-        print('Finished Download.')          
+        print('Finished Download.')
 
 
 class MongoDrier(StorageDriver):
+    """MongoDB storage client."""
     def __init__(self, connection_string):
         super().__init__(connection_string)
 
@@ -126,29 +133,33 @@ class MongoDrier(StorageDriver):
         collection = self.create_collection(db_name, collection_name)
         print('Inserting into mongodb...')
         collection.insert_many(documents)
-        print('Finished insertion.')   
+        print('Finished insertion.')
 
 
-storage_methods = {'mongo': MongoDrier, 'mysql':None, 'file_system': FileSystemDriver}
+STORAGE_METHODS = {'mongo': MongoDrier,
+                   'mysql': None,
+                   'file_system': FileSystemDriver}
 
 if __name__ == '__main__':
-    config = read_yaml_input('./config.yaml')
+    CONFIG = read_yaml_input('./config.yaml')
     # runtime configuration
-    run_time_config = config['runtime']
-    db_type = run_time_config['db']
-    env_type = run_time_config['env']
+    RUN_TIME_CONFIG = CONFIG['runtime']
+    DB_TYPE = RUN_TIME_CONFIG['db']
+    ENV_TYPE = RUN_TIME_CONFIG['env']
     # db configuartion at runtime
-    db_config = config['database'][db_type][env_type]
-    
-    # init db
-    connection_string = db_config['connection_string']
-    db_client = storage_methods[db_type](connection_string)
+    DB_CONFIG = CONFIG['database'][DB_TYPE][ENV_TYPE]
 
-    # download AI papers; here we put the papers in the same 
-    # collection even they may comes from different categories,
-    # for example computer science and statistics
-    criteria = config['dataset']['download']['criteria']
-    for criterion in criteria:
+    # init db
+    CONNECTION_STRING = DB_CONFIG['connection_string']
+    db_client = STORAGE_METHODS[DB_TYPE](CONNECTION_STRING)
+
+    # download AI papers; here we put the papers in the same \
+    # collection even they may comes from different categories, \
+    # for example computer science and statistics \
+    CRITERIA = CONFIG['dataset']['download']['criteria']
+    for criterion in CRITERIA:
         documents = scrape_arxiv(criterion)
-        db_client.insert_many(db_config['db_name'], db_config['collection_name'], documents)
+        db_client.insert_many(DB_CONFIG['db_name'],
+                              DB_CONFIG['collection_name'],
+                              documents)
     print('Done')
