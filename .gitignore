@@ -22,4 +22,5 @@ __pycache__/
 # others
 config.yaml
 REFERENCE.md
-review.sh
+upload_check.sh
+code_check.sh

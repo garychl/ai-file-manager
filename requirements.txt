@@ -1,0 +1,4 @@
+arxivscraper==0.0.3
+pdfrw==0.4
+pymongo==3.10.1
+PyYAML==5.3
