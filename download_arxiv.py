@@ -3,10 +3,10 @@ Download the papers from arxiv.
 """
 import os
 import pickle
-import yaml
 import logging
 from datetime import datetime
 
+import yaml
 from pymongo import MongoClient
 
 import utilities.arxiv_parser as ax
@@ -170,7 +170,6 @@ if __name__ == '__main__':
         if not documents:
             print('No documents returned for {}'.format(criterion))
         else:
-            db_client.insert_many(DB_CONFIG['db_name'],
-                                DB_CONFIG['collection_name'],
-                                documents)
+            db_client.insert_many(
+                DB_CONFIG['db_name'], DB_CONFIG['collection_name'], documents)
     print('Done.')
