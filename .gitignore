@@ -24,3 +24,4 @@ config.yaml
 REFERENCE.md
 upload_check.sh
 code_check.sh
+log/

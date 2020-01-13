@@ -4,6 +4,8 @@ Download the papers from arxiv.
 import os
 import pickle
 import yaml
+import logging
+from datetime import datetime
 
 from pymongo import MongoClient
 
@@ -135,13 +137,24 @@ STORAGE_METHODS = {'mongo': MongoDrier,
                    'file_system': FileSystemDriver}
 
 if __name__ == '__main__':
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
+    file_handler = logging.FileHandler('./log/arxiv/download.log')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    logger.info('Start running at: {}'.format(
+        datetime.today().strftime('%Y-%m-%d-%H:%M:%S')))
+
     CONFIG = read_yaml_input('./config.yaml')
     # runtime configuration
     RUN_TIME_CONFIG = CONFIG['runtime']
+    logger.info('Runtime config: {}'.format(RUN_TIME_CONFIG))
     DB_TYPE = RUN_TIME_CONFIG['db']
     ENV_TYPE = RUN_TIME_CONFIG['env']
     # db configuartion at runtime
     DB_CONFIG = CONFIG['database'][DB_TYPE][ENV_TYPE]
+    logger.info('DB config: {}'.format(DB_CONFIG))
 
     # init db
     CONNECTION_STRING = DB_CONFIG['connection_string']
@@ -151,9 +164,13 @@ if __name__ == '__main__':
     # collection even they may comes from different categories, \
     # for example computer science and statistics \
     CRITERIA = CONFIG['dataset']['download']['criteria']
+    logger.info('Criteria: {}'.format(CRITERIA))
     for criterion in CRITERIA:
         documents = scrape_arxiv(criterion)
-        db_client.insert_many(DB_CONFIG['db_name'],
-                              DB_CONFIG['collection_name'],
-                              documents)
-    print('Done')
+        if not documents:
+            print('No documents returned for {}'.format(criterion))
+        else:
+            db_client.insert_many(DB_CONFIG['db_name'],
+                                DB_CONFIG['collection_name'],
+                                documents)
+    print('Done.')
