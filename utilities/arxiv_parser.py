@@ -21,8 +21,8 @@ from arxivscraper.arxivscraper import Scraper, Record
 
 class Scraper2(Scraper):
     def __init__(self, category, date_from=None, date_until=None, t=30, timeout=300, filters={}):
-        super().__init__(category, date_from=None, date_until=None, t=30, timeout=300, filters={})
-
+        super().__init__(category, date_from=date_from, date_until=date_until, t=t, timeout=timeout, filters=filters)
+    
     def scrape(self):
         """ Overwrite the original scrape method for exception handling.
         """
