@@ -13,7 +13,7 @@ import utilities.arxiv_parser as ax
 
 
 def read_yaml_input(yaml_input):
-    """Reading configuration file"""
+    """Reading configuration file."""
     if isinstance(yaml_input, str):
         with open(yaml_input, 'r', newline='') as f:
             try:
@@ -28,7 +28,7 @@ def read_yaml_input(yaml_input):
 
 
 def correct_file_name(file_name):
-    """ensure file name will not cause error"""
+    """To ensure file name will not cause error."""
     return file_name.replace("/", "_")
 
 def scrape_arxiv(criterion):
@@ -44,7 +44,7 @@ def scrape_arxiv(criterion):
 
 
 class StorageDriver():
-    """Base class for stroage client"""
+    """Base class for stroage client."""
     def __init__(self, connection_string):
         self.client = self.init_client(connection_string)
 
