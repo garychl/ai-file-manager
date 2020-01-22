@@ -36,8 +36,10 @@ def scrape_arxiv(criterion):
     if not isinstance(criterion, dict):
         raise Exception("criterion is a dict.")
     print('Fetching the data with the criterion:\n{}'.format(criterion))
-    scraper = ax.Scraper2(**criterion)
-    documents = scraper.scrape()    # list of dict
+    scraper = ax.Scraper(**criterion)
+    documents, token = scraper.scrape()     # documents is list of dict
+    while token:
+        documents, token = scraper.scrape(documents, token)
     print('Completed downloading. Downloaded {} documents.'.format(
         len(documents)))
     return documents
