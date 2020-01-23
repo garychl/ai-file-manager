@@ -186,7 +186,6 @@ class Scraper(object):
         else:
             url = self.url
         print(url)
-        # ds = []
         k = 1
         while True:
             print('fetching up to ', 1000 * k, 'records...')
@@ -195,7 +194,7 @@ class Scraper(object):
                 response = urlopen(url)
             except HTTPError as e:
                 if e.code == 503:
-                    to = int(e.hdrs.get('retry-after', 30))
+                    # to = int(e.hdrs.get('retry-after', 30))
                     print('Got 503. Retrying after {0:d} seconds.'.format(self.t))
                     time.sleep(self.t)
                     continue
@@ -259,12 +258,12 @@ class Scraper(object):
         return ds, next_token
 
 
-def search_all(df, col, *words):
-    """
-    Return a sub-DataFrame of those rows whose Name column match all the words.
-    source: https://stackoverflow.com/a/22624079/3349443
-    """
-    return df[np.logical_and.reduce([df[col].str.contains(word) for word in words])]
+# def search_all(df, col, *words):
+#     """
+#     Return a sub-DataFrame of those rows whose Name column match all the words.
+#     source: https://stackoverflow.com/a/22624079/3349443
+#     """
+#     return df[np.logical_and.reduce([df[col].str.contains(word) for word in words])]
 
 
 cats = [
