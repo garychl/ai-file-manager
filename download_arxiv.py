@@ -15,9 +15,9 @@ import utilities.arxiv_parser as ax
 def read_yaml_input(yaml_input):
     """Reading configuration file."""
     if isinstance(yaml_input, str):
-        with open(yaml_input, 'r', newline='') as f:
+        with open(yaml_input, 'r', newline='') as file:
             try:
-                yaml_config = yaml.safe_load(f)
+                yaml_config = yaml.safe_load(file)
             except yaml.YAMLError as ymlexcp:
                 print(ymlexcp)
     elif isinstance(yaml_input, dict):
@@ -30,6 +30,7 @@ def read_yaml_input(yaml_input):
 def correct_file_name(file_name):
     """To ensure file name will not cause error."""
     return file_name.replace("/", "_")
+
 
 def init_scraper(criterion):
     """scrpaing the papers from arxiv"""
