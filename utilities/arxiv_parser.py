@@ -228,8 +228,8 @@ class Scraper(object):
                         if all(satisfy_requirement):
                             ds.append(record)
                 except: 
-                    pass
-                    # print('Cannot fetch the doc: id is {}\n'.format(meta.find(ARXIV + 'id').text.strip().lower().replace('\n', ' ')))
+                    # pass
+                    print('Cannot fetch the doc: id is {}\n'.format(meta.find(ARXIV + 'id').text.strip().lower().replace('\n', ' ')))
 
             try:
                 token = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken')
