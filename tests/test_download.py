@@ -15,9 +15,7 @@ class TestScraper(unittest.TestCase):
         CONFIG = read_yaml_input('./config.yaml')
         CRITERIA = CONFIG['dataset']['download']['criteria']
         criterion = CRITERIA[0]
-        scraper = ax.Scraper2(**criterion)
-        self.assertEqual(scraper.f, criterion['date_from'])
-        self.assertEqual(scraper.u, criterion['date_until'])
+        scraper = ax.Scraper(**criterion)
         self.assertEqual(scraper.filters, criterion['filters'])
 
 
@@ -40,6 +38,20 @@ class TestFileSystemDriver(unittest.TestCase):
             mock_exists.return_value = True
             FileSystemDriver('localhost').insert_one('par','sub', doc)
             mock_exists.insert_one('par','sub', doc)
+
+    def test_mongo_data(self):
+        CONFIG = read_yaml_input('./config.yaml')
+        ENV_TYPE = CONFIG['runtime']['env']
+        DB_TYPE = 'mongo'
+        DB_CONFIG = CONFIG['database'][DB_TYPE][ENV_TYPE]
+        CONNECTION_STRING = DB_CONFIG['connection_string']
+        db_client = STORAGE_METHODS[DB_TYPE](CONNECTION_STRING)
+
+        collection = db_client.client[DB_CONFIG['db_name']][DB_CONFIG['collection_name']]
+        dates = CONFIG['dataset']['download']['criteria'][0]['filters']['created']
+        lt_date, gt_date = dates[0], dates[1]
+        invalid_docs = collection.find({'created':{'$lt':lt_date, '$gt':gt_date}})
+        self.assertEqual(len(list(invalid_docs)), 0)
 
 if __name__ == '__main__':
     unittest.main()
