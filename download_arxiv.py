@@ -31,18 +31,13 @@ def correct_file_name(file_name):
     """To ensure file name will not cause error."""
     return file_name.replace("/", "_")
 
-def scrape_arxiv(criterion):
+def init_scraper(criterion):
     """scrpaing the papers from arxiv"""
     if not isinstance(criterion, dict):
         raise Exception("criterion is a dict.")
     print('Fetching the data with the criterion:\n{}'.format(criterion))
     scraper = ax.Scraper(**criterion)
-    documents, token = scraper.scrape()     # documents is list of dict
-    while token:
-        documents, token = scraper.scrape(documents, token)
-    print('Completed downloading. Downloaded {} documents.'.format(
-        len(documents)))
-    return documents
+    return scraper
 
 
 class StorageDriver():
@@ -133,7 +128,6 @@ class MongoDrier(StorageDriver):
         collection.insert_many(documents)
         print('Finished insertion.')
 
-
 STORAGE_METHODS = {'mongo': MongoDrier,
                    'mysql': None,
                    'file_system': FileSystemDriver}
@@ -168,10 +162,21 @@ if __name__ == '__main__':
     CRITERIA = CONFIG['dataset']['download']['criteria']
     logger.info('Criteria: {}'.format(CRITERIA))
     for criterion in CRITERIA:
-        documents = scrape_arxiv(criterion)
-        if not documents:
-            print('No documents returned for {}'.format(criterion))
+        scraper = init_scraper(criterion)
+        documents, token = scraper.scrape()     # documents is list of dict
+        if token is not None:
+            while token:
+                documents, token = scraper.scrape(documents, token)
+                db_client.insert_many(
+                        DB_CONFIG['db_name'], 
+                        DB_CONFIG['collection_name'], 
+                        documents)
+                documents = []
         else:
-            db_client.insert_many(
-                DB_CONFIG['db_name'], DB_CONFIG['collection_name'], documents)
+            try:
+                db_client.insert_many(
+                        DB_CONFIG['db_name'], DB_CONFIG['collection_name'], documents)
+            except:
+                print('No documents returned for {}'.format(criterion))
+                          
     print('Done.')
