@@ -165,18 +165,27 @@ if __name__ == '__main__':
         scraper = init_scraper(criterion)
         documents, token = scraper.scrape()     # documents is list of dict
         logger.info('len of doc:{}, token:{}'.format(len(documents), token))
-        if token is not None:
-            while token:
+
+        # has token
+        while token:
+            # has documents
+            try:    
                 db_client.insert_many(
                     DB_CONFIG['db_name'], 
                     DB_CONFIG['collection_name'], 
                     documents)
-                del documents
-                documents, token = scraper.scrape([], token)
-                logger.info('len of doc:{}, token:{}'.format(
-                    len(documents), 
-                    token))
-        try:
+            # no documents
+            except:     
+                pass
+            # continue to scrape
+            del documents
+            documents, token = scraper.scrape([], token)
+            logger.info('len of doc:{}, token:{}'.format(
+                len(documents), 
+                token))
+
+        # no (more) token
+        try:   
             db_client.insert_many(
                 DB_CONFIG['db_name'], 
                 DB_CONFIG['collection_name'], 
