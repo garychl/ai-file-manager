@@ -185,11 +185,13 @@ if __name__ == '__main__':
                 token))
 
         # no (more) token
-        try:   
+        # has documents
+        try:
             db_client.insert_many(
                 DB_CONFIG['db_name'], 
                 DB_CONFIG['collection_name'], 
                 documents)
+        # no documents
         except:
             print('No documents returned for {}'.format(criterion))
     
