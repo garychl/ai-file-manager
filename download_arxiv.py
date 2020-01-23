@@ -164,13 +164,20 @@ if __name__ == '__main__':
     for criterion in CRITERIA:
         scraper = init_scraper(criterion)
         documents, token = scraper.scrape()     # documents is list of dict
+        logger.info('len of doc:{}, token:{}'.format(
+                        len(documents), 
+                        token))
         if token is not None:
             while token:
                 documents, token = scraper.scrape(documents, token)
+                logger.info('len of doc:{}, token:{}'.format(
+                        len(documents), 
+                        token))
                 db_client.insert_many(
                         DB_CONFIG['db_name'], 
                         DB_CONFIG['collection_name'], 
                         documents)
+                del documents
                 documents = []
         else:
             try:
@@ -178,5 +185,6 @@ if __name__ == '__main__':
                         DB_CONFIG['db_name'], DB_CONFIG['collection_name'], documents)
             except:
                 print('No documents returned for {}'.format(criterion))
-                          
+    
+    logger.info('Done.')
     print('Done.')
