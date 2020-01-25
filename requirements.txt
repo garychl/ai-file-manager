@@ -1,5 +1,7 @@
-numpy==1.16.4
+gensim==3.8.1
+pdfminer==20191125
 pdfrw==0.4
+numpy==1.16.4
 pymongo==3.10.1
 python_dateutil==2.8.1
 PyYAML==5.3
