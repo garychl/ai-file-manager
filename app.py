@@ -1,5 +1,8 @@
 """
-Given a PDF file, generate a set of topics for it and add to the metadata.
+Given arxiv papers in pdf format, 
+    1) cluster the papers automatically
+    2) generate a set of topics for it and add to the metadata
+    3) assign the papers to different folders according to the clusters/topic
 """
 import os
 import glob
