@@ -1,7 +1,7 @@
 runtime:
-    db: file_system
-    env: local
-    write_file: True
+    db: mongo
+    env: cloud
+    data_limit: 10     # set it to a small number for testing (e.g.10), otherwise set a large number (e.g. 1e10)
 
 database:
     mongo:
@@ -10,45 +10,68 @@ database:
         password: 
         cluster_name: 
         connection_string: 
-        db_name: researchPaperTest
+        db_name: researchPaper
         collection_name: aiPaper
-      local:      # brew services start mongodb-community@4.2
-        connection_string: ['localhost:27017']
-        db_name: researchPaperTest
-        collection_name: aiPaperTest
+      local:  
+        connection_string: 
+        db_name: researchPaper
+        collection_name: aiPaper
     mysql:
       local:
         db_name:
         collection_name:          # table
     file_system:
       local:
-        connection_string:
-        db_name: researchPaperTest                 # parent directory
-        collection_name: aiPaperTest         # sub directory
+        connection_string: None
+        db_name: researchPaper                 # parent directory
+        collection_name: aiPaper         # sub directory
 
 dataset:
   download:
     criteria:
           - category: cs    
-            date_from: '2015-01-01'
-            date_until: '2015-01-05'
-            t: 10           # default:10
+            t: 60
             filters:
-              categories:
+              categories: # from the source code (keywords: self.keys), it is essentially an OR filter
                 - cs.ai
+                - cs.cl
+                - cs.cv
+                - cs.gt
+                - cs.ir
+                - cs.lg
+                - cs.ma
+                - cs.ne
+                - cs.na
+                - cs.ro
+                - cs.si
+                - cs.sy
+              created:
+                - '2013-01-01'
+                - '2019-12-31'
           - category: stat
-            date_from: '2015-01-01'
-            date_until: '2015-01-31'
-            t: 10           # default:10
+            t: 60
             filters:
               categories:
-                - stat.ml            
-            
+                - stat.ml
+                - stat.th            
+              created:
+                - '2013-01-01'
+                - '2019-12-31'            
 model:
+  saved:
+    local: aidoc2vec
+    cloud: aidoc2vec
+  hyper_para:
+    vector_size: 256
+    min_count: 15
+    epochs: 30
+    workers: 4
+    # random_seed: 7
 
 optimizer:
 
 train:
+  train: True
 
 evaluate:
 
