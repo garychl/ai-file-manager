@@ -179,7 +179,6 @@ if __name__ == '__main__':
             except:     
                 pass
             # continue to scrape
-            del documents
             documents, token = scraper.scrape([], token)
             logger.info('len of doc:{}, token:{}'.format(
                 len(documents), 
