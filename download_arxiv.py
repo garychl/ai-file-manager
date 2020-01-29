@@ -1,5 +1,7 @@
 """
 Download the papers from arxiv.
+
+The threading functionality is under development in the branch 'get-token'.
 """
 import os
 import pickle
