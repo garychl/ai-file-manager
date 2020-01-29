@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 import datetime
 from dateutil.parser import parse
 import time
+import random
 import sys
 PYTHON3 = sys.version_info[0] == 3
 
@@ -173,89 +174,102 @@ class Scraper(object):
                 satisfy = True
         return satisfy
 
+    @property
+    def token(self):
+        url = self.url
+        response = urlopen(url)
+        xml = response.read()
+        root = ET.fromstring(xml)
+        resumptionToken = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken').text
+        api_token = resumptionToken[:resumptionToken.find('|')]
+        return api_token
+
+    def get_urls(self, start, size):
+        token = self.token
+        print(list(range(start, start+(size+1)*1000, 1000)))
+        urls = [BASE+'resumptionToken='+token+'|'+str(tid) for tid in range(start, start+(size+1)*1000, 1000)]
+        return urls
+
+    def test_error(self):
+        token = self.token
+        url = BASE+'resumptionToken='+token+'|'+str(800000)
+        response = urlopen(url)
+        print(response)
+        xml = response.read()
+        print('xml',xml)
+        root = ET.fromstring(xml)
+        print('root',root)
+        # below resumptionToken is None if there is no returned result
+        resumptionToken = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken').text
+        print('resumptionToken', resumptionToken)
+         
 
 
-    def scrape(self, ds=[], restart_token=None):
+    def scrape(self, url):
         """ Overwrite the original scrape method for exception handling.
         """
+        ds = []
         t0 = time.time()
         tx = time.time()
         elapsed = 0.0
-        if restart_token is not None:
-            url = BASE + 'resumptionToken=%s' % restart_token
-        else:
-            url = self.url
         print(url)
+        tid = url[url.find('|'):]
         k = 1
-        while True:
-            print('fetching up to ', 1000 * k, 'records...')
-            print ('Current saved records {:d}'.format(len(ds)))
+        t = random.randint(10,60)
+
+        print('tid: {} - fetching ...'.format(tid))
+        print ('Current saved records {:d}'.format(len(ds)))
+        success = False
+        while not success:
             try:
                 response = urlopen(url)
+                success = True
             except HTTPError as e:
                 if e.code == 503:
                     # to = int(e.hdrs.get('retry-after', 30))
-                    print('Got 503. Retrying after {0:d} seconds.'.format(self.t))
-                    time.sleep(self.t)
+                    print('Got 503. Retrying after {0:d} seconds.'.format(t))
+                    time.sleep(t)
                     continue
                 else:
                     raise
-            k += 1
-            xml = response.read()
-            root = ET.fromstring(xml)
-            records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
-            for record in records:
-                meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
-                try:
-                    record = Record(meta).output()
-                    if self.append_all:
-                        ds.append(record)
-                    else:
-                        # save only when the record satisfy all the filter requirements
-                        satisfy_requirement = []
-                        for key, values in self.filters.items():
-                            if key == 'created':
-                                start, end = self._get_dates(values)
-                                satisfy = self._in_date_range(start, end, record[key])
-                            else:
-                                # satisfy if any of the value is found
-                                satisfy = False
-                                for word in values:
-                                    if word.lower() in record[key]:
-                                        satisfy = True
-                            satisfy_requirement.append(satisfy)
-                        
-                        if all(satisfy_requirement):
-                            ds.append(record)
-                except: 
-                    # pass
-                    print('Cannot fetch the doc: id is {}\n'.format(meta.find(ARXIV + 'id').text.strip().lower().replace('\n', ' ')))
-
+        
+        xml = response.read()
+        root = ET.fromstring(xml)
+        records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
+        for record in records:
+            meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
             try:
-                token = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken')
-                next_token = token.text
-            except:
-                return 1
-            if token is None or token.text is None:
-                print('No more query results received. Break.')
-                next_token = None
-                break
-            else:
-                url = BASE + 'resumptionToken=%s' % token.text
-                print('Next url is: {}'.format(url))
-
-            ty = time.time()
-            elapsed += (ty-tx)
-            if elapsed >= self.timeout:
-                print('timeout.')
-                break
-            else:
-                tx = time.time()
+                record = Record(meta).output()
+                if self.append_all:
+                    ds.append(record)
+                else:
+                    # save only when the record satisfy all the filter requirements
+                    satisfy_requirement = []
+                    for key, values in self.filters.items():
+                        if key == 'created':
+                            start, end = self._get_dates(values)
+                            satisfy = self._in_date_range(start, end, record[key])
+                        else:
+                            # satisfy if any of the value is found
+                            satisfy = False
+                            for word in values:
+                                if word.lower() in record[key]:
+                                    satisfy = True
+                        satisfy_requirement.append(satisfy)
+                    
+                    if all(satisfy_requirement):
+                        ds.append(record)
+            except: 
+                # pass
+                print('tid: {} - Cannot fetch the doc: id is {}\n'.format(tid, meta.find(ARXIV + 'id').text.strip().lower().replace('\n', ' ')))
 
         t1 = time.time()
         print('fetching is completed in {0:.1f} seconds.'.format(t1 - t0))
         print ('Total number of records {:d}'.format(len(ds)))
-        return ds, next_token
+        
+        resumptionToken = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken').text
+        cont = True if resumptionToken else False
+        return ds, cont
 
 
 # def search_all(df, col, *words):
