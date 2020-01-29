@@ -6,6 +6,7 @@ Given arxiv papers in pdf format,
 """
 import os
 import glob
+import argparse
 from pprint import pprint
 
 from sklearn.cluster import KMeans
@@ -51,16 +52,19 @@ class AppManager():
 
     
 if __name__ == '__main__':
-    CONFIG = read_yaml_input('config.yaml')
-    ENV_TYPE = CONFIG['runtime']['env']
-    MODEL_NAME = CONFIG['model']['saved'][ENV_TYPE]
-    MODEL_PATH = os.path.join('model', MODEL_NAME)
-    if os.path.isfile(MODEL_PATH):
+    parser = argparse.ArgumentParser(description='ai paper manager app')
+    parser.add_argument('--model-path', type=str, default='./model/aidoc2vec.model',
+                    help='model path of doc2vec')
+    parser.add_argument('--path', type=str,
+                    help='path of the papers')
+    args = parser.parse_args()
+
+    if os.path.isfile(args.model_path):
         print('Loading saved model...')
-        doc2vec_model = Doc2Vec.load(MODEL_PATH)
+        doc2vec_model = Doc2Vec.load(args.model_path)
     else:
         raise "Cannot locate the model."
 
-    app_mng = AppManager('../paper/', doc2vec_model)
+    app_mng = AppManager(args.path, doc2vec_model)    
     docs_cluster = app_mng.cluster_papers_kmeans(4)
     pprint(docs_cluster)
