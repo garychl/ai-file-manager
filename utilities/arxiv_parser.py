@@ -10,6 +10,7 @@ import time
 import random
 import sys
 PYTHON3 = sys.version_info[0] == 3
+import concurrent.futures
 
 import numpy as np 
 from urllib.parse import urlencode
@@ -121,8 +122,9 @@ class Scraper(object):
     ```
     """
 
-    def __init__(self, category, date_from=None, date_until=None, t=30, timeout=300, filters={}):
+    def __init__(self, category, workers=5, date_from=None, date_until=None, t=30, timeout=300, filters={}):
         self.cat = str(category)
+        self.workers = workers
         self.t = t
         self.timeout = timeout
         # DateToday = datetime.date.today()
@@ -139,6 +141,7 @@ class Scraper(object):
         # else:
         #     self.url = BASE + '&metadataPrefix=arXiv&set=%s' % self.cat
         self.url = BASE + 'metadataPrefix=arXiv&set=%s' % self.cat
+        self.token = self.get_token(self.url)
         self.filters = filters
         if not self.filters:
             self.append_all = True
@@ -174,9 +177,7 @@ class Scraper(object):
                 satisfy = True
         return satisfy
 
-    @property
-    def token(self):
-        url = self.url
+    def get_token(self, url):
         response = urlopen(url)
         xml = response.read()
         root = ET.fromstring(xml)
@@ -184,15 +185,13 @@ class Scraper(object):
         api_token = resumptionToken[:resumptionToken.find('|')]
         return api_token
 
-    def get_urls(self, start, size):
-        token = self.token
-        print(list(range(start, start+(size+1)*1000, 1000)))
-        urls = [BASE+'resumptionToken='+token+'|'+str(tid) for tid in range(start, start+(size+1)*1000, 1000)]
+    def get_urls(self, start=1):
+        tids = list(range(start, (start+self.workers*1000), 1000))
+        urls = [BASE+'resumptionToken='+self.token+'|'+str(tid) for tid in tids]
         return urls
 
     def test_error(self):
-        token = self.token
-        url = BASE+'resumptionToken='+token+'|'+str(800000)
+        url = BASE+'resumptionToken='+self.token+'|'+str(800000)
         response = urlopen(url)
         print(response)
         xml = response.read()
@@ -200,25 +199,17 @@ class Scraper(object):
         root = ET.fromstring(xml)
         print('root',root)
         # below resumptionToken is None if there is no returned result
-        resumptionToken = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken').text
+        resumptionToken = root.find(
+                OAI + 'ListRecords').find(
+                OAI + 'resumptionToken').text
         print('resumptionToken', resumptionToken)
-         
 
-
-    def scrape(self, url):
-        """ Overwrite the original scrape method for exception handling.
-        """
+    def scrape_one(self, url):
         ds = []
-        t0 = time.time()
-        tx = time.time()
-        elapsed = 0.0
-        print(url)
-        tid = url[url.find('|'):]
-        k = 1
-        t = random.randint(10,60)
-
-        print('tid: {} - fetching ...'.format(tid))
-        print ('Current saved records {:d}'.format(len(ds)))
+        print('Scraping url: {}'.format(url))
+        tid = url[url.find('|')+1:]
+        
+        t = random.randint(30,60)   # start the threads at different time
         success = False
         while not success:
             try:
@@ -226,7 +217,6 @@ class Scraper(object):
                 success = True
             except HTTPError as e:
                 if e.code == 503:
-                    # to = int(e.hdrs.get('retry-after', 30))
                     print('Got 503. Retrying after {0:d} seconds.'.format(t))
                     time.sleep(t)
                     continue
@@ -261,56 +251,18 @@ class Scraper(object):
                         ds.append(record)
             except: 
                 # pass
-                print('tid: {} - Cannot fetch the doc: id is {}\n'.format(tid, meta.find(ARXIV + 'id').text.strip().lower().replace('\n', ' ')))
+                print('tid: {} - Cannot fetch the doc: id is {}\n'.format(
+                    tid, meta.find(ARXIV + 'id').text.strip().lower().replace('\n', ' ')))
 
-        t1 = time.time()
-        print('fetching is completed in {0:.1f} seconds.'.format(t1 - t0))
         print ('Total number of records {:d}'.format(len(ds)))
-        
-        resumptionToken = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken').text
+        try:
+            resumptionToken = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken').text
+        except:
+            resumptionToken = None
         cont = True if resumptionToken else False
         return ds, cont
 
-
-# def search_all(df, col, *words):
-#     """
-#     Return a sub-DataFrame of those rows whose Name column match all the words.
-#     source: https://stackoverflow.com/a/22624079/3349443
-#     """
-#     return df[np.logical_and.reduce([df[col].str.contains(word) for word in words])]
-
-
-cats = [
- 'astro-ph', 'cond-mat', 'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph', 'hep-th',
- 'math-ph', 'nlin', 'nucl-ex', 'nucl-th', 'physics', 'quant-ph', 'math', 'CoRR', 'q-bio',
- 'q-fin', 'stat']
-subcats = {'cond-mat': ['cond-mat.dis-nn', 'cond-mat.mtrl-sci', 'cond-mat.mes-hall',
-              'cond-mat.other', 'cond-mat.quant-gas', 'cond-mat.soft', 'cond-mat.stat-mech',
-              'cond-mat.str-el', 'cond-mat.supr-con'],
- 'hep-th': [],'hep-ex': [],'hep-ph': [],
- 'gr-qc': [],'quant-ph': [],'q-fin': ['q-fin.CP', 'q-fin.EC', 'q-fin.GN',
-           'q-fin.MF', 'q-fin.PM', 'q-fin.PR', 'q-fin.RM', 'q-fin.ST', 'q-fin.TR'],
-
- 'nucl-ex': [],'CoRR': [],'nlin': ['nlin.AO', 'nlin.CG', 'nlin.CD', 'nlin.SI',
-          'nlin.PS'],
- 'physics': ['physics.acc-ph', 'physics.app-ph', 'physics.ao-ph',
-             'physics.atom-ph', 'physics.atm-clus', 'physics.bio-ph', 'physics.chem-ph',
-             'physics.class-ph', 'physics.comp-ph', 'physics.data-an', 'physics.flu-dyn',
-             'physics.gen-ph', 'physics.geo-ph', 'physics.hist-ph', 'physics.ins-det',
-             'physics.med-ph', 'physics.optics', 'physics.ed-ph', 'physics.soc-ph',
-             'physics.plasm-ph', 'physics.pop-ph', 'physics.space-ph'],
- 'math-ph': [],
- 'math': ['math.AG', 'math.AT', 'math.AP', 'math.CT', 'math.CA', 'math.CO',
-          'math.AC', 'math.CV', 'math.DG', 'math.DS', 'math.FA', 'math.GM', 'math.GN',
-          'math.GT', 'math.GR', 'math.HO', 'math.IT', 'math.KT', 'math.LO', 'math.MP',
-          'math.MG', 'math.NT', 'math.NA', 'math.OA', 'math.OC', 'math.PR', 'math.QA',
-          'math.RT', 'math.RA', 'math.SP', 'math.ST', 'math.SG'],
- 'q-bio': ['q-bio.BM',
-           'q-bio.CB', 'q-bio.GN', 'q-bio.MN', 'q-bio.NC', 'q-bio.OT', 'q-bio.PE', 'q-bio.QM',
-           'q-bio.SC', 'q-bio.TO'],
- 'nucl-th': [],'stat': ['stat.AP', 'stat.CO', 'stat.ML',
-          'stat.ME', 'stat.OT', 'stat.TH'],
- 'hep-lat': [],'astro-ph': ['astro-ph.GA',
-              'astro-ph.CO', 'astro-ph.EP', 'astro-ph.HE', 'astro-ph.IM', 'astro-ph.SR']
- }
-
+    def scrape_many(self, urls):
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = executor.map(self.scrape_one, urls)
+        return results

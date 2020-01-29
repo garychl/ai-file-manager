@@ -6,7 +6,6 @@ import time
 import pickle
 import logging
 from datetime import datetime
-import concurrent.futures
 from pprint import pprint
 
 import yaml
@@ -29,19 +28,16 @@ def read_yaml_input(yaml_input):
         raise Exception("Only accept dict or path of the .yaml file.")
     return yaml_config
 
+def get_next_tid(urls):
+    url = urls[-1]
+    tid = url[url.find('|')+1:]
+    next_tid = int(tid)+1000
+    return next_tid
 
 def correct_file_name(file_name):
     """To ensure file name will not cause error."""
     return file_name.replace("/", "_")
 
-
-def init_scraper(criterion):
-    """scrpaing the papers from arxiv"""
-    if not isinstance(criterion, dict):
-        raise Exception("criterion is a dict.")
-    print('Fetching the data with the criterion:\n{}'.format(criterion))
-    scraper = ax.Scraper(**criterion)
-    return scraper
 
 
 class StorageDriver():
@@ -149,21 +145,23 @@ if __name__ == '__main__':
     CRITERIA = CONFIG['dataset']['download']['criteria']
     for criterion in CRITERIA:
         time_start = time.time()
-        scraper = init_scraper(criterion)
-        print(scraper.token)
-        urls = scraper.get_urls(65001, 5)
-        print('urls',urls)
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        scraper = ax.Scraper(**criterion)
+        urls = scraper.get_urls(220001)
+        
+        cont = True
+        while cont:
             cont_flags = []
-            cont = True
-            # need to get tid as well and feed into get_utls
-            while cont:
-                results = executor.map(scraper.scrape, urls)
+            next_tid = get_next_tid(urls)
+            print('next_tid',next_tid)
+            results = scraper.scrape_many(urls)
+            for result in results:
+                doc, cont = result
+                print('len',len(doc))
+                # db.insert(doc)
+                cont_flags.append(cont)  
+            cont = all(cont_flags)
+            urls = scraper.get_urls(next_tid)
             
-                for result in results:
-                    
-                    print('Result',len(result))
-            
-            time_end = time.time()
+        time_end = time.time()
         print('Used: {} seconds.'.format(time_end-time_start))
         break
