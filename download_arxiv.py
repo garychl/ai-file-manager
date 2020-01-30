@@ -177,6 +177,7 @@ if __name__ == '__main__':
                 except TypeError:
                     print('No doc returned.')
                 except Exception as e:
+                    logger.warn(e)
                     print(e)
                 cont_flags.append(cont)  
             cont = all(cont_flags)
