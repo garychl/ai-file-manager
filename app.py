@@ -66,5 +66,5 @@ if __name__ == '__main__':
         raise "Cannot locate the model."
 
     app_mng = AppManager(args.path, doc2vec_model)    
-    docs_cluster = app_mng.cluster_papers_kmeans(4)
+    docs_cluster = app_mng.cluster_papers_kmeans(6)
     pprint(docs_cluster)
