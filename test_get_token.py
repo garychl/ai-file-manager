@@ -146,7 +146,7 @@ if __name__ == '__main__':
     for criterion in CRITERIA:
         time_start = time.time()
         scraper = ax.Scraper(**criterion)
-        urls = scraper.get_urls(220001)
+        urls = scraper.get_urls()
         
         cont = True
         while cont:
@@ -156,8 +156,13 @@ if __name__ == '__main__':
             results = scraper.scrape_many(urls)
             for result in results:
                 doc, cont = result
-                print('len',len(doc))
-                # db.insert(doc)
+                try:
+                    db_client.insert_many(
+                        DB_CONFIG['db_name'], 
+                        DB_CONFIG['collection_name'], 
+                        doc)
+                except:
+                    print('Cannot insert.')
                 cont_flags.append(cont)  
             cont = all(cont_flags)
             urls = scraper.get_urls(next_tid)
