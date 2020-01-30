@@ -1,5 +1,5 @@
 """ 
-copy from arxivscraper from modifications
+copy from arxivscraper for significant modifications
 """
 
 from __future__ import print_function
@@ -122,7 +122,7 @@ class Scraper(object):
     ```
     """
 
-    def __init__(self, category, workers=5, date_from=None, date_until=None, t=30, timeout=300, filters={}):
+    def __init__(self, category, workers=1, date_from=None, date_until=None, t=30, timeout=300, filters={}):
         self.cat = str(category)
         self.workers = workers
         self.t = t
@@ -188,7 +188,8 @@ class Scraper(object):
     def get_urls(self, start=1):
         tids = list(range(start, (start+self.workers*1000), 1000))
         urls = [BASE+'resumptionToken='+self.token+'|'+str(tid) for tid in tids]
-        return urls
+        next_tid = tids[-1]+1000
+        return urls, next_tid
 
     def test_error(self):
         url = BASE+'resumptionToken='+self.token+'|'+str(800000)
@@ -205,20 +206,25 @@ class Scraper(object):
         print('resumptionToken', resumptionToken)
 
     def scrape_one(self, url):
-        ds = []
         print('Scraping url: {}'.format(url))
+        ds = []
         tid = url[url.find('|')+1:]
         
-        t = random.randint(30,60)   # start the threads at different time
+        t = random.randint(30,30+self.workers*10)   # restart the threads at different time
         success = False
+        failure_count = 0
         while not success:
             try:
                 response = urlopen(url)
                 success = True
             except HTTPError as e:
+                if failure_count >= 5:
+                    return ds, True
+            
                 if e.code == 503:
                     print('Got 503. Retrying after {0:d} seconds.'.format(t))
                     time.sleep(t)
+                    failure_count += 1
                     continue
                 else:
                     raise

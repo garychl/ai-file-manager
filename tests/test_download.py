@@ -1,5 +1,7 @@
 """
 Test the download_arxiv.py
+
+The download script has been updated and thus some tests might fail.
 """
 import os
 import yaml
