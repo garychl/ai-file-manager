@@ -11,7 +11,6 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from pdfrw import PdfReader, PdfWriter, IndirectPdfDict 
-from sklearn.cluster import KMeans
 from gensim.utils import simple_preprocess
 from gensim.models.doc2vec import Doc2Vec
 

@@ -53,10 +53,12 @@ class AppManager():
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ai paper manager app')
+    parser.add_argument('path', type=str,
+                    help='path of the papers')
     parser.add_argument('--model-path', type=str, default='./model/aidoc2vec.model',
                     help='model path of doc2vec')
-    parser.add_argument('--path', type=str,
-                    help='path of the papers')
+    parser.add_argument('--num-cluster', type=int, default=6, 
+                    help='number of clusters')                    
     args = parser.parse_args()
 
     if os.path.isfile(args.model_path):
@@ -66,5 +68,5 @@ if __name__ == '__main__':
         raise "Cannot locate the model."
 
     app_mng = AppManager(args.path, doc2vec_model)    
-    docs_cluster = app_mng.cluster_papers_kmeans(6)
+    docs_cluster = app_mng.cluster_papers_kmeans(args.num_cluster)
     pprint(docs_cluster)
