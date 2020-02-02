@@ -10,8 +10,10 @@ from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
-from pdfrw import PdfReader, PdfWriter, IndirectPdfDict 
+from pdfrw import PdfReader, PdfWriter, IndirectPdfDict
+import gensim
 from gensim.utils import simple_preprocess
+from gensim.parsing.preprocessing import remove_stopwords, stem_text, strip_punctuation
 from gensim.models.doc2vec import Doc2Vec
 
 
@@ -50,7 +52,9 @@ class PdfFileManager():
         return meta_data
 
     def process_text(self, text):
-        processed_text = simple_preprocess(text)
+        text = remove_stopwords(text)
+        text = strip_punctuation(text)
+        processed_text = gensim.utils.simple_preprocess(text, deacc=False, min_len=2, max_len=20)
         return processed_text
 
     def parse_abstract(self):

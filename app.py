@@ -10,8 +10,10 @@ import argparse
 from pprint import pprint
 
 from sklearn.cluster import KMeans
+from sklearn.manifold import TSNE
 from gensim.utils import simple_preprocess
 from gensim.models.doc2vec import Doc2Vec
+import numpy as np; np.random.seed(7)
 
 from utilities.utils import read_yaml_input
 from pdf_manager import PdfFileManager
