@@ -127,19 +127,6 @@ class Scraper(object):
         self.workers = workers
         self.t = t
         self.timeout = timeout
-        # DateToday = datetime.date.today()
-        # if test:
-        #     if date_from is None:
-        #         self.f = str(DateToday.replace(day=1))
-        #     else:
-        #         self.f = date_from
-        #     if date_until is None:
-        #         self.u = str(DateToday)
-        #     else:
-        #         self.u = date_until
-        #     self.url = BASE + 'from=' + self.f + '&until=' + self.u + '&metadataPrefix=arXiv&set=%s' % self.cat
-        # else:
-        #     self.url = BASE + '&metadataPrefix=arXiv&set=%s' % self.cat
         self.url = BASE + 'metadataPrefix=arXiv&set=%s' % self.cat
         self.token = self.get_token(self.url)
         self.filters = filters

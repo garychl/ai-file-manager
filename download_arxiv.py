@@ -168,7 +168,6 @@ if __name__ == '__main__':
             results = scraper.scrape_many(urls)
             for result in results:
                 doc, cont = result
-                print('len of doc: {}, cont: {}'.format(len(doc), cont))
                 try:
                     db_client.insert_many(
                         DB_CONFIG['db_name'], 
@@ -181,7 +180,6 @@ if __name__ == '__main__':
                     print(e)
                 cont_flags.append(cont)  
             cont = all(cont_flags)
-            print('all(cont_flags):', cont)
             urls, next_tid = scraper.get_urls(next_tid)
     
     logger.info('Done.')
