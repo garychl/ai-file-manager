@@ -52,6 +52,9 @@ class AppManager():
     def mv_to_folders_by_clusters(self):
         pass
 
+    def cluster_with_taxonomy(self, taxonomy):
+        pass
+
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ai paper manager app')

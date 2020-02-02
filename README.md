@@ -16,10 +16,8 @@ The ideal file manager provides two modes: supervised and unspuervised.
 
 ## Model
 
-Two NLP models will be used in this project: Doc2vec and Topic modelling.
-Doc2vec has been implemented and the model is trained on ~160,000 abstracts of machine learning and deep learning research papers.
+This project used Doc2vec model. The model is trained on ~160,000 abstracts of machine learning and deep learning research papers.
 
 ## To Use
 
-The project is still under active development.
-Yet, the unsupervised clustering is implemented in `app.py` can be used to cluster a set of .pdf research papers.
+The project is still under development.
