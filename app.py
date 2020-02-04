@@ -14,6 +14,7 @@ from sklearn.manifold import TSNE
 from gensim.utils import simple_preprocess
 from gensim.models.doc2vec import Doc2Vec
 import numpy as np; np.random.seed(7)
+import matplotlib.pyplot as plt
 
 from utilities.utils import read_yaml_input
 from pdf_manager import PdfFileManager
@@ -24,6 +25,7 @@ class AppManager():
         self.papers_dir = papers_dir
         self.docs_path = glob.glob(papers_dir+"*.pdf")
         self.doc2vec_model = doc2vec_model
+
 
     def get_docs_embeddings(self):
         docs_embeddings_dic = {}
@@ -37,6 +39,20 @@ class AppManager():
             else:
                 print('No parsed contennt for {}'.format(doc_path))
         return docs_embeddings_dic
+
+    def visualize_embeddings(self, out_full_path=None):
+        docs_embeddings_dic = self.get_docs_embeddings()
+        file_name = list(docs_embeddings_dic.keys())
+        embeddings = np.array(list(docs_embeddings_dic.values()))
+        fig, ax = plt.subplots(1, 1)
+        ax.pcolor(embeddings.T)
+        ax.set_title('Embeddings')
+        ax.set_xticks(np.arange(len(file_name)))
+        ax.set_xticklabels(file_name)
+        plt.setp(ax.get_xticklabels(), rotation=90, ha="right")
+        if not out_full_path:
+            fig.savefig(out_full_path, transparent=False, dpi=80, bbox_inches="tight")
+        plt.show()
 
     def cluster_papers_kmeans(self, n_clusters=4, random_state=0):
         docs_embeddings_dic = self.get_docs_embeddings()
