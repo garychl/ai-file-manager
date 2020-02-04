@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 
 import yaml
 
@@ -17,6 +18,16 @@ def read_yaml_input(yaml_input):
     else:
         raise Exception("Only accept dict or path of the .yaml file.")
     return yaml_config
+
+
+def get_logger(path):
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
+    file_handler = logging.FileHandler(path)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    return logger
 
 
 def cd_prj_dir(show=False):
