@@ -6,8 +6,6 @@ An AI file manager to manage the research papers (in the field of machine learni
 
 * It is not easy to have a taxonomy that suits your need every time. Because a research paper is sometimes interdisciplinary or it invovles serveral concepts in a surprising way.
 
-The ideal file manager provides two modes: supervised and unspuervised.
-
 ## Use Case
 
 * You find a new research paper online but you do not have time to read at that moment. Over time you may accumulate a lot of unread papers. This app can help tagging the papers you saved locally and add the tags to the metadata.
